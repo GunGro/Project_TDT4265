@@ -90,8 +90,6 @@ def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs=1):
     return train_loss, valid_loss    
 
 def acc_metric(predb, yb):
-    plt.imshow(yb.cpu()[0,:,:])
-    plt.show()
     if torch.cuda.is_available():
         return (predb.argmax(dim=1) == yb.cuda()).float().mean()
     else:
@@ -118,9 +116,6 @@ def main ():
     #learning rate
     learn_rate = 0.01
 
-    #sets the matplotlib display backend (most likely not needed)
-    mp.use('TkAgg', force=True)
-
     #load the training data
     base_path = Path('../datasets/CAMUS_resized')
     data = DatasetLoader(base_path/'train_gray', 
@@ -141,7 +136,7 @@ def main ():
     xb, yb = next(iter(train_data))
     print (xb.shape, yb.shape)
 
-    # build the Unet2D with one channel as input and 2 channels as output
+    # build the Unet2D with one channel as input and 3 channels as output
     unet = Unet2D(1,2)
 
     #loss function and optimizer
