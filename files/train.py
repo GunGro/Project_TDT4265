@@ -90,6 +90,8 @@ def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs=1):
     return train_loss, valid_loss    
 
 def acc_metric(predb, yb):
+    plt.imshow(yb.cpu()[0,:,:])
+    plt.show()
     if torch.cuda.is_available():
         return (predb.argmax(dim=1) == yb.cuda()).float().mean()
     else:
