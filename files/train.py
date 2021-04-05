@@ -15,7 +15,9 @@ from Unet2D import Unet2D
 
 def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs=1):
     start = time.time()
-    model.cuda()
+
+    if torch.cuda.is_available():
+        model.cuda()
 
     train_loss, valid_loss = [], []
 
@@ -40,8 +42,9 @@ def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs=1):
 
             # iterate over data
             for x, y in dataloader:
-                x = x.cuda()
-                y = y.cuda()
+                if torch.cuda.is_available():
+                    x = x.cuda()
+                    y = y.cuda()
                 step += 1
 
                 # forward pass
@@ -70,11 +73,10 @@ def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs=1):
 
                 if step % 100 == 0:
                     # clear_output(wait=True)
-                    print('Current step: {}  Loss: {}  Acc: {}  AllocMem (Mb): {}'.format(step, loss, acc, torch.cuda.memory_allocated()/1024/1024))
+                    print('Current step: {}  Loss: {}  Acc: {}  '.format(step, loss, acc))
                     # print(torch.cuda.memory_summary())
-
-            epoch_loss = running_loss / len(dataloader.dataset)
-            epoch_acc = running_acc / len(dataloader.dataset)
+                epoch_loss = running_loss / len(dataloader.dataset)
+                epoch_acc = running_acc / len(dataloader.dataset)
 
             print('Epoch {}/{}'.format(epoch, epochs - 1))
             print('-' * 10)
@@ -89,7 +91,10 @@ def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs=1):
     return train_loss, valid_loss    
 
 def acc_metric(predb, yb):
-    return (predb.argmax(dim=1) == yb.cuda()).float().mean()
+    if torch.cuda.is_available():
+        return (predb.argmax(dim=1) == yb.cuda()).float().mean()
+    else:
+        return (predb.argmax(dim=1) == yb).float().mean()
 
 def batch_to_img(xb, idx):
     img = np.array(xb[idx,0:3])
@@ -116,7 +121,7 @@ def main ():
     mp.use('TkAgg', force=True)
 
     #load the training data
-    base_path = Path('/home/gkiss/Data/CAMUS_resized')
+    base_path = Path('../datasets/CAMUS_resized')
     data = DatasetLoader(base_path/'train_gray', 
                         base_path/'train_gt')
     print(len(data))
