@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 import matplotlib as mp
 import matplotlib.pyplot as plt
 import time
@@ -116,7 +115,7 @@ def main ():
     mp.use('TkAgg', force=True)
 
     #load the training data
-    base_path = Path('/home/gkiss/Data/CAMUS_resized')
+    base_path = Path('../datasets/CAMUS_resized')
     data = DatasetLoader(base_path/'train_gray', 
                         base_path/'train_gt')
     print(len(data))
