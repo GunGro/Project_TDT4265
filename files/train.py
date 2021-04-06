@@ -93,6 +93,7 @@ def acc_metric(predb, yb):
     if torch.cuda.is_available():
         return (predb.argmax(dim=1) == yb.cuda()).float().mean()
     else:
+        print(predb)
         return (predb.argmax(dim=1) == yb).float().mean()
 
 def batch_to_img(xb, idx):
@@ -102,6 +103,21 @@ def batch_to_img(xb, idx):
 def predb_to_mask(predb, idx):
     p = torch.functional.F.softmax(predb[idx], 0)
     return p.argmax(0).cpu()
+
+# antar da at vi har y / y_pred som ser slik ut: (batch/index of image, height, width, class_map)
+def calculate_dice(y, y_pred):
+    y_f = y.flatten()
+    y_pred_f = y_pred.flatten()
+    intersection = np.sum(y_f * y_pred_f)
+    smooth = 0.0001
+    return (2. * intersection + smooth) / (np.sum(y_f) + np.sum(y_pred_f) + smooth)
+
+def multiclass_dice(y, y_pred, num_classes):
+    dice=0
+    for index in range(num_classes):
+        dice += calculate_dice(y[:,:,:,index], y_pred[:,:,:,index])
+    return dice/num_classes
+
 
 def main ():
     #enable if you want to see some plotting
