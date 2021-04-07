@@ -24,8 +24,8 @@ def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs=1):
 
     for epoch in range(epochs):
         print('Epoch {}/{}'.format(epoch, epochs - 1))
-        print('-' * 10)
-
+        print("-"*20)
+        print()
         for phase in ['train', 'valid']:
             if phase == 'train':
                 model.train(True)  # Set trainind mode = true
@@ -72,17 +72,16 @@ def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs=1):
 
                 if step % 100 == 0:
                     # clear_output(wait=True)
-                    print('Current step: {}  Loss: {}  Acc: {}  '.format(step, loss, acc))
+                    print('\033[FCurrent step: {}  Loss: {}  Acc: {}  '.format(step, loss, acc))
                     # print(torch.cuda.memory_summary())
                 epoch_loss = running_loss / len(dataloader.dataset)
                 epoch_acc = running_acc / len(dataloader.dataset)
-
-            print('Epoch {}/{}'.format(epoch, epochs - 1))
-            print('-' * 10)
-            print('{} Loss: {:.4f} Acc: {}'.format(phase, epoch_loss, epoch_acc))
-            print('-' * 10)
+        
+            print('Epoch: {:.0f} {} Loss: {:.4f} Acc: {}'.format(epoch, phase, epoch_loss, epoch_acc))
 
             train_loss.append(epoch_loss) if phase=='train' else valid_loss.append(epoch_loss)
+        if epoch < epochs -1:
+            print("\033[F"*5, end = "")
 
     time_elapsed = time.time() - start
     print('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))    
