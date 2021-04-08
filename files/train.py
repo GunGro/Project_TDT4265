@@ -1,4 +1,5 @@
 import numpy as np
+import sys
 import matplotlib as mp
 import matplotlib.pyplot as plt
 import time
@@ -67,8 +68,8 @@ def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs=1):
                 # stats - whatever is the phase
                 acc = acc_fn(outputs, y)
 
-                running_acc  += acc*dataloader.batch_size
-                running_loss += loss*dataloader.batch_size 
+                running_acc  += acc*y.shape[0]#dataloader.batch_size
+                running_loss += loss*y.shape[0]#dataloader.batch_size 
 
                 if step % 100 == 0:
                     # clear_output(wait=True)
@@ -77,7 +78,7 @@ def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs=1):
                 epoch_loss = running_loss / len(dataloader.dataset)
                 epoch_acc = running_acc / len(dataloader.dataset)
         
-            print('Epoch: {:.0f} {} Loss: {:.4f} Acc: {}'.format(epoch, phase, epoch_loss, epoch_acc))
+            print('Epoch: {:.0f} {} Loss: {:.4f} Acc: {}'.format(epoch, phase, epoch_loss, epoch_acc) + " "*20)
 
             train_loss.append(epoch_loss.item()) if phase=='train' else valid_loss.append(epoch_loss.item())
         if epoch < epochs -1:
@@ -103,12 +104,12 @@ def predb_to_mask(predb, idx):
     return p.argmax(0).cpu()
 
 # antar da at vi har y / y_pred som ser slik ut: (batch/index of image, height, width, class_map)
-def calculate_dice(y, y_pred):
-    y_f = y.flatten()
-    y_pred_f = y_pred.flatten()
-    intersection = np.sum(y_f * y_pred_f)
-    smooth = 0.0001
-    return (2. * intersection + smooth) / (np.sum(y_f) + np.sum(y_pred_f) + smooth)
+def calculate_dice(predb, yb):
+    y_f = yb.flatten()
+    y_predb_f = predb.argmax(dim = 1).flatten()
+    intersection =((y_f == y_predb_f)*(y_f > 0)).sum()
+    smooth = 1e-8
+    return (2 * intersection + smooth) / ((y_f).sum()+ (y_predb_f).sum() + smooth)
 
 def multiclass_dice(y, y_pred, num_classes):
     dice=0
@@ -119,22 +120,22 @@ def multiclass_dice(y, y_pred, num_classes):
 
 def main ():
     #enable if you want to see some plotting
-    visual_debug = True
+    visual_debug = False
 
     #batch size
     bs = 12
 
     #epochs
-    epochs_val = 50
-
-    #set gca to "AKtgg"
+    epochs_val = 30
+    
+    # set gca to "AKtgg"
     mp.use("TkAgg")
     
     #learning rate
     learn_rate = 0.01
 
     #load the training data
-    base_path = Path('../datasets/CAMUS_resized')
+    base_path = Path("../datasets/CAMUS_resized/")
     data = DatasetLoader(base_path/'train_gray', 
                         base_path/'train_gt')
     print(len(data))
@@ -153,7 +154,7 @@ def main ():
     xb, yb = next(iter(train_data))
     print (xb.shape, yb.shape)
 
-    # build the Unet2D with one channel as input and 3 channels as output
+    # build the Unet2D with one channel as input and 2 channels as output
     unet = Unet2D(1,2)
 
     #loss function and optimizer
@@ -186,6 +187,6 @@ def main ():
 
         plt.show()
 
-    print(yb, calculate_dice(predb))
+    print(calculate_dice(predb, yb.cuda()).item())
 if __name__ == "__main__":
     main()
