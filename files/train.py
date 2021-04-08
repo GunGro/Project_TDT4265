@@ -126,7 +126,7 @@ def main ():
     bs = 12
 
     #epochs
-    epochs_val = 30
+    epochs_val = 50
     
     # set gca to "AKtgg"
     mp.use("TkAgg")
@@ -135,13 +135,15 @@ def main ():
     learn_rate = 0.01
 
     #load the training data
-    base_path = Path("../datasets/CAMUS_resized/")
+    base_path = Path("../datasets/CAMUS_full/")
     data = DatasetLoader(base_path/'train_gray', 
                         base_path/'train_gt')
     print(len(data))
+    print(type(len(data))) 
+    assert len(data) % 3 == 0, f"dude, skjerp deg"
 
     #split the training dataset and initialize the data loaders
-    train_dataset, valid_dataset = torch.utils.data.random_split(data, (300, 150))
+    train_dataset, valid_dataset = torch.utils.data.random_split(data, (int(2/3* len(data)),int(1/3*len(data))))
     train_data = DataLoader(train_dataset, batch_size=bs, shuffle=True)
     valid_data = DataLoader(valid_dataset, batch_size=bs, shuffle=True)
 
@@ -150,12 +152,13 @@ def main ():
         ax[0].imshow(data.open_as_array(150))
         ax[1].imshow(data.open_mask(150))
         plt.show()
+    print(data.files)
 
     xb, yb = next(iter(train_data))
     print (xb.shape, yb.shape)
 
     # build the Unet2D with one channel as input and 2 channels as output
-    unet = Unet2D(1,2)
+    unet = Unet2D(1,4)
 
     #loss function and optimizer
     loss_fn = nn.CrossEntropyLoss()
