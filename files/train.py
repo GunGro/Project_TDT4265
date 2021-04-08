@@ -92,7 +92,6 @@ def acc_metric(predb, yb):
     if torch.cuda.is_available():
         return (predb.argmax(dim=1) == yb.cuda()).float().mean()
     else:
-        print(predb)
         return (predb.argmax(dim=1) == yb).float().mean()
 
 def batch_to_img(xb, idx):
@@ -184,5 +183,6 @@ def main ():
 
         plt.show()
 
+    print(yb, calculate_dice(predb))
 if __name__ == "__main__":
     main()
