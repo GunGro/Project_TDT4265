@@ -79,7 +79,7 @@ def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs=1):
         
             print('Epoch: {:.0f} {} Loss: {:.4f} Acc: {}'.format(epoch, phase, epoch_loss, epoch_acc))
 
-            train_loss.append(epoch_loss) if phase=='train' else valid_loss.append(epoch_loss)
+            train_loss.append(epoch_loss.item()) if phase=='train' else valid_loss.append(epoch_loss.item())
         if epoch < epochs -1:
             print("\033[F"*5, end = "")
 
@@ -128,6 +128,9 @@ def main ():
     #epochs
     epochs_val = 50
 
+    #set gca to "AKtgg"
+    mp.use("TkAgg")
+    
     #learning rate
     learn_rate = 0.01
 
