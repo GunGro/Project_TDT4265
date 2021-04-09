@@ -48,8 +48,6 @@ def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs=1):
                     x = x.cuda()
                     y = y.cuda()
                 step += 1
-                print(step)
-                print(x.shape, y.shape, x.dtype, y.dtype)
                 # forward pass
                 if phase == 'train':
                     # zero the gradients
@@ -108,11 +106,13 @@ def predb_to_mask(predb, idx):
 
 # antar da at vi har y / y_pred som ser slik ut: (batch/index of image, height, width, class_map)
 def calculate_dice(predb, yb):
-    y_f = yb.flatten()
-    y_predb_f = predb.argmax(dim = 1).flatten()
-    intersection =((y_f == y_predb_f)*(y_f > 0)).sum()
-    smooth = 1e-8
-    return (2 * intersection + smooth) / ((y_f).sum()+ (y_predb_f).sum() + smooth)
+    num_classes = predb.shape[1]
+    predb = predb.argmax(dim = 1)
+    for i in range(1, num_classes):
+        intersection =((yb == i)*(predb == i)).sum()
+        smooth = 1e-8
+        DSC = (2 * intersection + smooth) / ((yb == i).sum()+ (predb == i).sum() + smooth)
+        print(f"Dicescore of class {i} is {DSC:.3f}")
 
 def multiclass_dice(y, y_pred, num_classes):
     dice=0
@@ -129,7 +129,7 @@ def main ():
     bs = 12
 
     #epochs
-    epochs_val = 50
+    epochs_val = 15
     
     # set gca to "AKtgg"
     mp.use("TkAgg")
@@ -155,7 +155,6 @@ def main ():
         ax[0].imshow(data.open_as_array(150))
         ax[1].imshow(data.open_mask(150))
         plt.show()
-    print(data.files)
 
     xb, yb = next(iter(train_data))
     print (xb.shape, yb.shape)
@@ -192,7 +191,7 @@ def main ():
             ax[i,2].imshow(predb_to_mask(predb, i))
 
         plt.show()
+    calculate_dice(predb.cpu(), yb.cpu())
 
-    print(calculate_dice(predb, yb.cuda()).item())
 if __name__ == "__main__":
     main()
