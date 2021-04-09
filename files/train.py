@@ -1,3 +1,5 @@
+#!/usr/bin/env python 
+
 import numpy as np
 import sys
 import matplotlib as mp
@@ -46,7 +48,8 @@ def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs=1):
                     x = x.cuda()
                     y = y.cuda()
                 step += 1
-
+                print(step)
+                print(x.shape, y.shape, x.dtype, y.dtype)
                 # forward pass
                 if phase == 'train':
                     # zero the gradients
@@ -120,7 +123,7 @@ def multiclass_dice(y, y_pred, num_classes):
 
 def main ():
     #enable if you want to see some plotting
-    visual_debug = False
+    visual_debug = True
 
     #batch size
     bs = 12

@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+from torchvision.transforms import Resize
 
 from pathlib import Path
 from torch.utils.data import Dataset, DataLoader, sampler
@@ -40,15 +41,18 @@ class DatasetLoader(Dataset):
     def open_mask(self, idx, add_dims=False):
         #open mask file
         raw_mask = np.array(Image.open(self.files[idx]['gt']))
-        raw_mask = np.where(raw_mask>100, 1, 0)
+        # raw_mask = np.where(raw_mask>100, 1, 0)
         
         return np.expand_dims(raw_mask, 0) if add_dims else raw_mask
     
-    def __getitem__(self, idx):
+    def __getitem__(self, idx, size = 300):
         #get the image and mask as arrays
         x = torch.tensor(self.open_as_array(idx, invert=self.pytorch), dtype=torch.float32)
-        y = torch.tensor(self.open_mask(idx, add_dims=False), dtype=torch.torch.int64)
-        
+        y = torch.tensor(self.open_mask(idx, add_dims=False), dtype=torch.float32)
+        x = x.torchvision.transforms.Resize((size, size))
+
+
+        y = y.Resize((size, size))
         return x, y
     
     def get_as_pil(self, idx):
