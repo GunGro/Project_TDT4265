@@ -129,7 +129,7 @@ def main ():
     bs = 12
 
     #epochs
-    epochs_val = 15
+    epochs_val = 50
     
     # set gca to "AKtgg"
     mp.use("TkAgg")
@@ -178,7 +178,7 @@ def main ():
         plt.show()
 
     #predict on the next train batch (is this fair?)
-    xb, yb = next(iter(train_data))
+    xb, yb = next(iter(valid_data))
     with torch.no_grad():
         predb = unet(xb.cuda())
 
