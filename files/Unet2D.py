@@ -55,3 +55,14 @@ class Unet2D(nn.Module):
                             torch.nn.ConvTranspose2d(out_channels, out_channels, kernel_size=3, stride=2, padding=1, output_padding=1) 
                             )
         return expand
+
+
+if __name__ == "__main__":
+
+    # define model
+
+    unet = Unet2D(1,4)
+
+    # print
+
+    print(unet)

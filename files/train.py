@@ -164,6 +164,10 @@ def main ():
 
     # build the Unet2D with one channel as input and 2 channels as output
     unet = Unet2D(1,4)
+    print(unet)
+    print("neste eksempel")
+    for i, child in enumerate(unet.children()):
+        print(i, child)
 
     #loss function and optimizer
     loss_fn = nn.CrossEntropyLoss()
