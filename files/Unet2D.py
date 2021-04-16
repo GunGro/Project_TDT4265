@@ -1,19 +1,37 @@
 import torch
 from torch import nn
+from torchvision import models, datasets, transforms
 
 class Unet2D(nn.Module):
     def __init__(self, in_channels, out_channels):
         super().__init__()
 
-        self.conv1 = self.contract_block(in_channels, 32, 7, 3)
+        self.resnet = models.resnet34(pretrained=True)
+        n_image_channels = in_channels
+        self.resnet.conv1 = nn.Conv2d(n_image_channels,
+                                self.resnet.conv1.out_channels,
+                                kernel_size=7,
+                                stride=2,
+                                padding=3,
+                                bias=False)
+
+        self.conv1 = self.contract_block(256, 32, 7, 3)
         self.conv2 = self.contract_block(32, 64, 3, 1)
         self.conv3 = self.contract_block(64, 128, 3, 1)
 
+
         self.upconv3 = self.expand_block(128, 64, 3, 1)
         self.upconv2 = self.expand_block(64*2, 32, 3, 1)
-        self.upconv1 = self.expand_block(32*2, out_channels, 3, 1)
+        self.upconv1 = self.expand_block(32*2, 64, 3, 1)
+        self.upconv0 = self.expand_block(64, out_channels, 3, 1)
 
     def __call__(self, x):
+        # pretrained feature detector
+        for i, child in enumerate(self.resnet.children()):
+            x = child.forward(x)
+            if (i==6):
+                break
+
         # downsampling part
         conv1 = self.conv1(x)
         conv2 = self.conv2(conv1)
@@ -23,8 +41,12 @@ class Unet2D(nn.Module):
         upconv3 = self.upconv3(conv3)
         upconv2 = self.upconv2(torch.cat([upconv3, conv2], 1))
         upconv1 = self.upconv1(torch.cat([upconv2, conv1], 1))
+        upconv0 = self.upconv1(upconv1)
+        upconv0 = self.upconv1(upconv0)
+        upconv0 = self.upconv1(upconv0)
+        upconv0 = self.upconv0(upconv0)
 
-        return upconv1
+        return upconv0
 
     def contract_block(self, in_channels, out_channels, kernel_size, padding):
 
@@ -65,4 +87,10 @@ if __name__ == "__main__":
 
     # print
 
-    print(unet)
+    #print(unet)
+
+    resnet = next(unet.children())
+    for i, (name, child) in enumerate(resnet.named_children()):
+
+        print(i, name, child)
+

@@ -124,7 +124,7 @@ def main ():
     visual_debug = False
 
     #batch size
-    bs = 12
+    bs = 1
 
     #epochs
     epochs_val = 5
