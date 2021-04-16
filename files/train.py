@@ -72,10 +72,6 @@ def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs=1):
                 running_acc  += acc*y.shape[0]#dataloader.batch_size
                 running_loss += loss*y.shape[0]#dataloader.batch_size 
 
-                if step % 100 == 0:
-                    # clear_output(wait=True)
-                    print('\033[FCurrent step: {}  Loss: {}  Acc: {}  '.format(step, loss, acc))
-                    # print(torch.cuda.memory_summary())
                 epoch_loss = running_loss / len(dataloader.dataset)
                 epoch_acc = running_acc / len(dataloader.dataset)
         
@@ -108,11 +104,13 @@ def predb_to_mask(predb, idx):
 def calculate_dice(predb, yb):
     num_classes = predb.shape[1]
     predb = predb.argmax(dim = 1)
+    DSC_vec = []
     for i in range(1, num_classes):
         intersection =((yb == i)*(predb == i)).sum()
         smooth = 1e-8
         DSC = (2 * intersection + smooth) / ((yb == i).sum()+ (predb == i).sum() + smooth)
-        print(f"Dicescore of class {i} is {DSC:.3f}")
+        DSC_vec.append(DSC.item())
+    return DSC_vec
 
 def multiclass_dice(y, y_pred, num_classes):
     dice=0
@@ -123,13 +121,13 @@ def multiclass_dice(y, y_pred, num_classes):
 
 def main ():
     #enable if you want to see some plotting
-    visual_debug = True
+    visual_debug = False
 
     #batch size
     bs = 12
 
     #epochs
-    epochs_val = 50
+    epochs_val = 5
     
     # set gca to "AKtgg"
     mp.use("TkAgg")
@@ -185,19 +183,36 @@ def main ():
     #predict on the test dataset 
 
     running_loss = 0.0
-    running_acc  = 0.0
+    running_acc  = [0]*3
 
-    for x, y in iter(test_data):
-        if torch.cuda.is_available():
-            x.cuda()
-            y.cuda()
-        outputs = unet(x)
-        running_loss += loss_fn(outputs, y)*y.shape[0]
-        running_acc  += acc_metric(outputs, y)*y.shape[0]
+    with torch.no_grad():
+        for x, y in iter(test_data):
+            if torch.cuda.is_available():
+                x = x.cuda()
+                y = y.cuda()
+            unet.train(False)
+            outputs = unet(x)
+            running_loss += loss_fn(outputs, y).item()*y.shape[0]
+            DSC = calculate_dice(outputs, y)
+            for i in range(len(running_acc)):
+                running_acc[i]  += DSC[i]*y.shape[0]
+                
+        for i in range(len(running_acc)):
+            running_acc[i] /= len(test_data.dataset)
 
-    print(f"Test loss: { running_loss/len(test_data.dataset):.4f}, Test acc: { running_acc/len(test_data.dataset):.4f}")
+    print(f"Test loss: { running_loss/len(test_data.dataset):.4f}")
+    for i, dice_score in enumerate(DSC):
+        print(f"Dice score of class {i}: {dice_score : .4f}")
         
     #show the predicted segmentations
+
+    xb, yb = next(iter(train_data))
+    with torch.no_grad():
+        if torch.cuda.is_available():
+            predb = unet(xb.cuda())
+        else:
+            predb = unet(xb)
+    
     if visual_debug:
         fig, ax = plt.subplots(bs,3, figsize=(15,bs*5))
         for i in range(bs):
