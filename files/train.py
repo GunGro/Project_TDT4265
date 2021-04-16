@@ -145,10 +145,15 @@ def main ():
     print(type(len(data))) 
     assert len(data) % 3 == 0, f"dude, skjerp deg"
 
+    num_train = int(0.6 * len(data))
+    num_val   = int(0.3 * len(data))
+    num_test = len(data) - num_train - num_val
+
     #split the training dataset and initialize the data loaders
-    train_dataset, valid_dataset = torch.utils.data.random_split(data, (int(2/3* len(data)),int(1/3*len(data))))
+    train_dataset, valid_dataset, test_dataset = torch.utils.data.random_split(data, (num_train, num_val, num_test))
     train_data = DataLoader(train_dataset, batch_size=bs, shuffle=True)
     valid_data = DataLoader(valid_dataset, batch_size=bs, shuffle=True)
+    test_data = DataLoader(test_dataset, batch_size=bs)
 
     if visual_debug:
         fig, ax = plt.subplots(1,2)
@@ -177,11 +182,21 @@ def main ():
         plt.legend()
         plt.show()
 
-    #predict on the next train batch (is this fair?)
-    xb, yb = next(iter(valid_data))
-    with torch.no_grad():
-        predb = unet(xb.cuda())
+    #predict on the test dataset 
 
+    running_loss = 0.0
+    running_acc  = 0.0
+
+    for x, y in iter(test_data):
+        if torch.cuda.is_available():
+            x.cuda()
+            y.cuda()
+        outputs = unet(x)
+        running_loss += loss_fn(outputs, y)*y.shape[0]
+        running_acc  += acc_metric(outputs, y)*y.shape[0]
+
+    print(f"Test loss: { running_loss/len(test_data.dataset):.4f}, Test acc: { running_acc/len(test_data.dataset):.4f}")
+        
     #show the predicted segmentations
     if visual_debug:
         fig, ax = plt.subplots(bs,3, figsize=(15,bs*5))
