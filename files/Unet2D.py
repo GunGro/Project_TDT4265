@@ -20,18 +20,43 @@ class Unet2D(nn.Module):
         self.conv3 = self.contract_block(64, 128, 3, 1)
 
 
+#3 torch.Size([1, 64, 96, 96])
+#4 torch.Size([1, 64, 96, 96])
+#5 torch.Size([1, 128, 48, 48])
+#6 torch.Size([1, 256, 24, 24])
+
+
         self.upconv3 = self.expand_block(128, 64, 3, 1)
         self.upconv2 = self.expand_block(64*2, 32, 3, 1)
         self.upconv1 = self.expand_block(32*2, 64, 3, 1)
-        self.upconv0 = self.expand_block(64, out_channels, 3, 1)
+        self.upconv0 = self.expand_block(64, 64, 3, 1)
+
+
+        self.upconvRes1 = self.expand_block(256+64, 64, 3, 1)
+        self.upconvRes2 = self.expand_block(128+64, 64, 3, 1)
+        self.upconvRes3 = self.expand_block(2*64, 64 , 3, 1)
+        self.upconvRes4 = self.expand_block(2*64, out_channels, 3, 1)
+
+
 
     def __call__(self, x):
         # pretrained feature detector
         for i, child in enumerate(self.resnet.children()):
             x = child.forward(x)
+
+            if (i==1):
+                out1 = x
+            if (i==3):
+                out3 = x
+            if (i==4):
+                out4 = x
+            if (i==5):
+                out5 = x
+            if (i==6):
+                out6 = x
+
             if (i==6):
                 break
-
         # downsampling part
         conv1 = self.conv1(x)
         conv2 = self.conv2(conv1)
@@ -41,12 +66,15 @@ class Unet2D(nn.Module):
         upconv3 = self.upconv3(conv3)
         upconv2 = self.upconv2(torch.cat([upconv3, conv2], 1))
         upconv1 = self.upconv1(torch.cat([upconv2, conv1], 1))
-        upconv0 = self.upconv1(upconv1)
-        upconv0 = self.upconv1(upconv0)
-        upconv0 = self.upconv1(upconv0)
-        upconv0 = self.upconv0(upconv0)
 
-        return upconv0
+        upconvRes1 = self.upconvRes1(torch.cat([upconv1, out6], 1))
+        upconvRes2 = self.upconvRes2(torch.cat([upconvRes1, out5], 1))
+        upconvRes3 = self.upconvRes3(torch.cat([upconvRes2, out4], 1))
+        upconvRes4 = self.upconvRes4(torch.cat([upconvRes3, out1], 1))
+
+
+
+        return upconvRes4
 
     def contract_block(self, in_channels, out_channels, kernel_size, padding):
 
