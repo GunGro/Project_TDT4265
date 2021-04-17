@@ -121,13 +121,13 @@ def multiclass_dice(y, y_pred, num_classes):
 
 def main ():
     #enable if you want to see some plotting
-    visual_debug = False
+    visual_debug = True
 
     #batch size
-    bs = 5
+    bs = 15
 
     #epochs
-    epochs_val = 5
+    epochs_val = 100
     
     # set gca to "AKtgg"
     mp.use("TkAgg")
