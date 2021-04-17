@@ -124,7 +124,11 @@ def main ():
     visual_debug = True
 
     #batch size
+<<<<<<< HEAD
+    bs = 15
+=======
     bs = 12
+>>>>>>> refs/remotes/origin/main
 
     #epochs
     epochs_val = 100
