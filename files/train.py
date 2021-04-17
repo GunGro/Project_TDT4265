@@ -124,7 +124,11 @@ def main ():
     visual_debug = True
 
     #batch size
+<<<<<<< HEAD
     bs = 15
+=======
+    bs = 12
+>>>>>>> refs/remotes/origin/main
 
     #epochs
     epochs_val = 100
@@ -171,8 +175,8 @@ def main ():
 
     #loss function and optimizer
     loss_fn = nn.CrossEntropyLoss()
-    opt = torch.optim.Adam(unet.parameters(), lr=learn_rate)
-
+    #opt = torch.optim.Adam(unet.parameters(), lr=learn_rate)
+    opt = torch.optim.Adam(unet.parameters(), lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0.1, amsgrad=False)
     #do some training
     train_loss, valid_loss = train(unet, train_data, valid_data, loss_fn, opt, acc_metric, epochs=epochs_val)
 
