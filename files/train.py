@@ -121,13 +121,13 @@ def multiclass_dice(y, y_pred, num_classes):
 
 def main ():
     #enable if you want to see some plotting
-    visual_debug = False
+    visual_debug = True
 
     #batch size
-    bs = 5
+    bs = 12
 
     #epochs
-    epochs_val = 5
+    epochs_val = 100
     
     # set gca to "AKtgg"
     mp.use("TkAgg")
@@ -171,8 +171,8 @@ def main ():
 
     #loss function and optimizer
     loss_fn = nn.CrossEntropyLoss()
-    opt = torch.optim.Adam(unet.parameters(), lr=learn_rate)
-
+    #opt = torch.optim.Adam(unet.parameters(), lr=learn_rate)
+    opt = torch.optim.Adam(unet.parameters(), lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0.1, amsgrad=False)
     #do some training
     train_loss, valid_loss = train(unet, train_data, valid_data, loss_fn, opt, acc_metric, epochs=epochs_val)
 
