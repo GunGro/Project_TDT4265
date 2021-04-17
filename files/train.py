@@ -172,7 +172,11 @@ def main ():
     #loss function and optimizer
     loss_fn = nn.CrossEntropyLoss()
     #opt = torch.optim.Adam(unet.parameters(), lr=learn_rate)
-    opt = torch.optim.Adam(unet.parameters(), lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0.1, amsgrad=False)
+    opt = torch.optim.Adam(unet.parameters(), lr=0.0001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0.1, amsgrad=False)
+    #consider trying with sgd also:
+    #torch.optim.SGD(unet.parameters(), lr=0.001, momentum = 0.1, dampening = 0, weight_decay = 0.1, nesterov = False)
+
+
     #do some training
     train_loss, valid_loss = train(unet, train_data, valid_data, loss_fn, opt, acc_metric, epochs=epochs_val)
 
