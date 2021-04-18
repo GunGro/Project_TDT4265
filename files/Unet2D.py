@@ -70,6 +70,7 @@ class Unet2D(nn.Module):
         upconvRes3 = self.upconvRes3(torch.cat([upconvRes2, out4], 1))
         upconvRes4 = self.upconvRes4(torch.cat([upconvRes3, out1], 1))
 
+
         return upconvRes4
 
     def contract_block(self, in_channels, out_channels, kernel_size, padding):
