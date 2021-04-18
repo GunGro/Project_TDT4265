@@ -15,9 +15,9 @@ class Unet2D(nn.Module):
                                 padding=3,
                                 bias=False)
 
-        self.conv1 = self.contract_block(256, 32, 7, 3)
-        self.conv2 = self.contract_block(32, 64, 3, 1)
-        self.conv3 = self.contract_block(64, 128, 3, 1)
+        self.conv1 = self.contract_block(256, 512, 7, 3)
+        self.conv2 = self.contract_block(512, 1028, 3, 1)
+        self.conv3 = self.contract_block(1028, 512, 3, 1)
 
 
 #3 torch.Size([1, 64, 96, 96])
@@ -26,14 +26,14 @@ class Unet2D(nn.Module):
 #6 torch.Size([1, 256, 24, 24])
 
 
-        self.upconv3 = self.expand_block(128, 128, 3, 1)
-        self.upconv2 = self.expand_block(64+128, 64, 3, 1)
-        self.upconv1 = self.expand_block(32+64, 256, 3, 1)
+        self.upconv3 = self.expand_block(512, 128, 3, 1)
+        self.upconv2 = self.expand_block(128+1028, 64, 3, 1)
+        self.upconv1 = self.expand_block(64+512, 64, 3, 1)
 
-        self.upconvRes1 = self.expand_block(256+256, 512, 3, 1)
-        self.upconvRes2 = self.expand_block(128+512, 1028, 3, 1)
-        self.upconvRes3 = self.expand_block(64+1028, 512, 3, 1)
-        self.upconvRes4 = self.expand_block(64+512, out_channels, 3, 1)
+        self.upconvRes1 = self.expand_block(256+64, 128, 3, 1)
+        self.upconvRes2 = self.expand_block(128+128, 128, 3, 1)
+        self.upconvRes3 = self.expand_block(64+128, 64, 3, 1)
+        self.upconvRes4 = self.expand_block(64+64, out_channels, 3, 1)
 
 
 
@@ -70,7 +70,7 @@ class Unet2D(nn.Module):
         upconvRes3 = self.upconvRes3(torch.cat([upconvRes2, out4], 1))
         upconvRes4 = self.upconvRes4(torch.cat([upconvRes3, out1], 1))
 
-
+        print('Made it through a forward')
         return upconvRes4
 
     def contract_block(self, in_channels, out_channels, kernel_size, padding):
