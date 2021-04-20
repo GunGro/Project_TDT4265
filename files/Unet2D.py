@@ -52,7 +52,6 @@ class Unet2D(nn.Module):
                 out5 = x
             if (i==6):
                 out6 = x
-
             if (i==6):
                 break
         # downsampling part

@@ -128,7 +128,7 @@ def main ():
     bs = 8
 
     #epochs
-    epochs_val = 50
+    epochs_val = 15
     
     # set gca to "AKtgg"
     mp.use("TkAgg")
