@@ -5,16 +5,24 @@ import torch.nn.functional as F
 from pathlib import Path
 from torch.utils.data import Dataset, DataLoader, sampler
 from PIL import Image
+import torchvision.transforms as tf
 
 #load data from a folder
 class DatasetLoader(Dataset):
     def __init__(self, gray_dir, gt_dir, pytorch=True):
         super().__init__()
-        
+
         # Loop through the files in red folder and combine, into a dictionary, the other bands
         self.files = [self.combine_files(f, gt_dir) for f in gray_dir.iterdir() if not f.is_dir()]
         self.pytorch = pytorch
-        
+        self.do_augment = False
+
+        self.Vflip = tf.RandomVerticalFlip(p=1)
+        self.Hflip = tf.RandomHorizontalFlip(p=1)
+        self.Blur = tf.GaussianBlur(5,sigma=(0.1,2.0))
+        self.Rot = tf.RandomRotation((-30,30))
+
+
     def combine_files(self, gray_file: Path, gt_dir):
         
         files = {'gray': gray_file, 
@@ -51,6 +59,25 @@ class DatasetLoader(Dataset):
         y = torch.tensor(self.open_mask(idx, add_dims=False), dtype=torch.float32)
         x = F.interpolate(x[None], size = [size, size])[0]
         y = F.interpolate(y[None, None], size = [size, size])[0,0].long()
+
+        if self.do_augment:
+            choice = np.random.choice(5)
+
+            if choice == 0:
+                pass #donothing
+            elif choice == 1:
+                x = self.Hflip(x)
+                y = self.Hflip(y)
+            elif choice == 2:
+                x = self.Vflip(x)
+                y = self.Vflip(y)
+            elif choice == 3:
+                x = self.Blur(x)
+            elif choice == 4:
+                both = self.Rot(torch.cat((x,y[None])))
+                y = both[-1].long()
+                x = both[:-1]
+
         return x, y
     
     def get_as_pil(self, idx):

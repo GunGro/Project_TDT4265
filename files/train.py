@@ -10,6 +10,7 @@ import torch
 from torch.utils.data import Dataset, DataLoader, sampler
 from torch import nn
 
+
 from DatasetLoader import DatasetLoader
 from Unet2D import Unet2D
 
@@ -126,7 +127,7 @@ def main ():
     bs = 8
 
     #epochs
-    epochs_val = 100
+    epochs_val = 15
     
     # set gca to "AKtgg"
     mp.use("TkAgg")
@@ -135,27 +136,28 @@ def main ():
     learn_rate = 0.01
 
     #load the training data
-    base_path = Path("../datasets/CAMUS_full/")
+    base_path = Path("../datasets/CAMUS_full/Train/")
     data = DatasetLoader(base_path/'train_gray', 
                         base_path/'train_gt')
     print(len(data))
     print(type(len(data))) 
-    assert len(data) % 3 == 0, f"dude, skjerp deg"
+
 
     num_train = int(0.6 * len(data))
-    num_val   = int(0.3 * len(data))
-    num_test = len(data) - num_train - num_val
+    num_val   = len(data) - num_train
+
+
 
     #split the training dataset and initialize the data loaders
-    train_dataset, valid_dataset, test_dataset = torch.utils.data.random_split(data, (num_train, num_val, num_test))
+    train_dataset, valid_dataset = torch.utils.data.random_split(data, (num_train, num_val))
     train_data = DataLoader(train_dataset, batch_size=bs, shuffle=True)
     valid_data = DataLoader(valid_dataset, batch_size=bs, shuffle=True)
-    test_data = DataLoader(test_dataset, batch_size=bs)
 
     if visual_debug:
         fig, ax = plt.subplots(1,2)
-        ax[0].imshow(data.open_as_array(150))
-        ax[1].imshow(data.open_mask(150))
+        xb, yb = next(iter(train_data))
+        ax[0].imshow(xb[0,0].numpy())
+        ax[1].imshow(yb[0].numpy())
         plt.show()
 
     xb, yb = next(iter(train_data))
@@ -177,7 +179,9 @@ def main ():
 
 
     #do some training
+    data.do_augment = True
     train_loss, valid_loss = train(unet, train_data, valid_data, loss_fn, opt, acc_metric, epochs=epochs_val)
+    data.do_augment = False
 
     #plot training and validation losses
     if visual_debug:
@@ -188,6 +192,12 @@ def main ():
         plt.show()
 
     #predict on the test dataset 
+    base_path = Path("../datasets/CAMUS_full/Test/")
+    data = DatasetLoader(base_path/'train_gray',
+                        base_path/'train_gt')
+
+    test_data = DataLoader(data,batch_size=bs)
+
 
     running_loss = 0.0
     running_acc  = [0]*3
