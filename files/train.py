@@ -122,6 +122,7 @@ def multiclass_dice(y, y_pred, num_classes):
 def main ():
     #enable if you want to see some plotting
     visual_debug = True
+    stupid_visual_debug = False
 
     #batch size
     bs = 8
@@ -153,12 +154,16 @@ def main ():
     train_data = DataLoader(train_dataset, batch_size=bs, shuffle=True)
     valid_data = DataLoader(valid_dataset, batch_size=bs, shuffle=True)
 
-    if visual_debug:
-        fig, ax = plt.subplots(1,2)
+    if stupid_visual_debug:
         xb, yb = next(iter(train_data))
-        ax[0].imshow(xb[0,0].numpy())
-        ax[1].imshow(yb[0].numpy())
-        plt.show()
+        data.do_augment = True
+        for x,y in zip (xb, yb):
+            fig, ax = plt.subplots(1,2)
+            xb, yb = next(iter(train_data))
+            ax[0].imshow(xb[0,0].numpy())
+            ax[1].imshow(yb[0].numpy())
+            plt.show()
+        data.do_augment = False
 
     xb, yb = next(iter(train_data))
     print (xb.shape, yb.shape)
