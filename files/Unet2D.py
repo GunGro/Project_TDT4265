@@ -15,9 +15,9 @@ class Unet2D(nn.Module):
                                 padding=3,
                                 bias=False)
 
-        self.conv1 = self.contract_block(256, 512, 7, 3)
-        self.conv2 = self.contract_block(512, 1028, 3, 1)
-        self.conv3 = self.contract_block(1028, 512, 3, 1)
+        self.conv1 = self.contract_block(256, 512, 7, 3, 0.1)
+        self.conv2 = self.contract_block(512, 1028, 3, 1, 0.2)
+        self.conv3 = self.contract_block(1028, 512, 3, 1, 0.3)
 
 
 #3 torch.Size([1, 64, 96, 96])
@@ -72,19 +72,24 @@ class Unet2D(nn.Module):
         #print('Made it through a forward')
         return upconvRes4
 
-    def contract_block(self, in_channels, out_channels, kernel_size, padding):
+    def contract_block(self, in_channels, out_channels, kernel_size, padding, dp_prob = 0.1):
 
         contract = nn.Sequential(
             torch.nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, stride=1, padding=padding),
             torch.nn.BatchNorm2d(out_channels),
             torch.nn.ReLU(),
 
+            torch.nn.Dropout(dp_prob),
+
             torch.nn.Conv2d(out_channels, out_channels, kernel_size=kernel_size, stride=1, padding=padding),
             torch.nn.BatchNorm2d(out_channels),
             torch.nn.ReLU(),
 
-            torch.nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+
+            torch.nn.MaxPool2d(kernel_size=3, stride=2, padding=1),
+            torch.nn.Dropout(dp_prob)
                                  )
+
 
         return contract
 
