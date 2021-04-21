@@ -81,10 +81,10 @@ def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs=1):
 
 
             if phase == 'valid' and len(valid_loss) > 0 and epoch_loss.item() < min(valid_loss) and epoch > 10:
-                save_model(model, f'../ModelCahce/LeadingModel.pt')
+                save_model(model, Path('../files/ModelCache/LeadingModel.pt'))
                 checkpoint = epoch
-            if phase == 'valid' and epoch == 0:
-                save_model(model, f'../ModelCahce/LeadingModel.pt')
+            if epoch == 0:
+                save_model(model, Path('../files/ModelCache/LeadingModel.pt'))
                 checkpoint = epoch
 
             if phase == 'valid' and (epoch - checkpoint) > 20:
@@ -147,7 +147,7 @@ def main ():
     stupid_visual_debug = False
 
     #batch size
-    bs = 1
+    bs = 2
 
     #epochs
     epochs_val = 1
@@ -226,8 +226,7 @@ def main ():
     running_loss = 0.0
     running_acc  = [0]*3
 
-
-    test_model = load_model(f'../ModelCahce/LeadingModel.pt')
+    test_model = load_model(Path('../files/ModelCache/LeadingModel.pt'))
 
 
     with torch.no_grad():
@@ -257,16 +256,15 @@ def main ():
             predb = test_model(xb.cuda())
         else:
             predb = test_model(xb)
-    
+
     if visual_debug:
-        fig, ax = plt.subplots(bs,3, figsize=(15,bs*5))
+        fig, ax = plt.subplots(bs, 3, figsize=(15, bs * 5))
         for i in range(bs):
-            ax[i,0].imshow(batch_to_img(xb,i))
-            ax[i,1].imshow(yb[i])
-            ax[i,2].imshow(predb_to_mask(predb, i))
+            ax[i, 0].imshow(batch_to_img(xb, i))
+            ax[i, 1].imshow(yb[i])
+            ax[i, 2].imshow(predb_to_mask(predb, i))
 
         plt.show()
-    calculate_dice(predb.cpu(), yb.cpu())
 
 if __name__ == "__main__":
     main()
