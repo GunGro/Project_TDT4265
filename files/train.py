@@ -105,7 +105,7 @@ def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs=1, do_mi
             train_loss.append(epoch_loss.item()) if phase=='train' else valid_loss.append(epoch_loss.item())
 
             # do early stop?
-            if phase == 'valid' and (epoch - checkpoint) == 20:
+            if phase == 'valid' and (epoch - checkpoint) == 50:
                 print('Stopping early')
 
                 time_elapsed = time.time() - start
@@ -166,7 +166,7 @@ def main ():
     bs = 12
 
     #epochs
-    epochs_val = 1000
+    epochs_val = 0
     
     # set gca to "AKtgg"
     mp.use("TkAgg")
@@ -178,8 +178,6 @@ def main ():
     base_path = Path("../datasets/CAMUS_full/Train/")
     data = DatasetLoader(base_path/'train_gray', 
                         base_path/'train_gt')
-    print(len(data))
-    print(type(len(data))) 
 
 
     num_train = int(0.6 * len(data))
@@ -208,7 +206,6 @@ def main ():
 
     # build the Unet2D with one channel as input and 2 channels as output
     unet = Unet2D(1,4)
-    print(unet)
 
     #loss function and optimizer
     loss_fn = nn.CrossEntropyLoss()
@@ -250,7 +247,7 @@ def main ():
             if torch.cuda.is_available():
                 x = x.cuda()
                 y = y.cuda()
-            unet.train(False)
+            test_model.train(False)
             outputs = test_model(x)
             running_loss += loss_fn(outputs, y).item()*y.shape[0]
             DSC = calculate_dice(outputs, y)
@@ -266,7 +263,7 @@ def main ():
         
     #show the predicted segmentations
 
-    xb, yb = next(iter(train_data))
+    xb, yb = next(iter(test_data))
     with torch.no_grad():
         if torch.cuda.is_available():
             predb = test_model(xb.cuda())
