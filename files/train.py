@@ -125,10 +125,10 @@ def main ():
     stupid_visual_debug = False
 
     #batch size
-    bs = 1
+    bs = 8
 
     #epochs
-    epochs_val = 15
+    epochs_val = 100
     
     # set gca to "AKtgg"
     mp.use("TkAgg")
