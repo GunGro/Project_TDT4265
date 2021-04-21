@@ -157,7 +157,7 @@ def multiclass_dice(y, y_pred, num_classes):
     return dice/num_classes
 
 
-def main ():
+def main (do_augment, do_mixup):
     #enable if you want to see some plotting
     visual_debug = True
     stupid_visual_debug = False
@@ -166,7 +166,7 @@ def main ():
     bs = 12
 
     #epochs
-    epochs_val = 0
+    epochs_val = 100
     
     # set gca to "AKtgg"
     mp.use("TkAgg")
@@ -192,7 +192,7 @@ def main ():
 
     if stupid_visual_debug:
         xb, yb = next(iter(train_data))
-        data.do_augment = True
+        data.do_augment = do_augment
         for x,y in zip (xb, yb):
             fig, ax = plt.subplots(1,2)
             xb, yb = next(iter(train_data))
@@ -202,7 +202,6 @@ def main ():
         data.do_augment = False
 
     xb, yb = next(iter(train_data))
-    print (xb.shape, yb.shape)
 
     # build the Unet2D with one channel as input and 2 channels as output
     unet = Unet2D(1,4)
@@ -216,8 +215,8 @@ def main ():
 
 
     #do some training
-    data.do_augment = True
-    train_loss, valid_loss = train(unet, train_data, valid_data, loss_fn, opt, acc_metric, epochs=epochs_val, do_mixup=True)
+    data.do_augment = do_augment
+    train_loss, valid_loss = train(unet, train_data, valid_data, loss_fn, opt, acc_metric, epochs=epochs_val, do_mixup=do_mixup)
     data.do_augment = False
 
     #plot training and validation losses
@@ -280,4 +279,4 @@ def main ():
         plt.show()
 
 if __name__ == "__main__":
-    main()
+    main(do_augment = False, do_mixup = False)
