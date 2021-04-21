@@ -1,0 +1,27 @@
+from pathlib import Path
+from PIL import Image
+import sys
+import numpy as np
+
+
+def convert_tif_to_jpg(PATH):
+    for child in PATH.iterdir():
+        im = Image.open(child)
+        print(str(child))
+        im.save(str(child).replace(".jpg", ".tif"))
+        print(child)
+
+def reformat_images(PATH):
+
+    for child in PATH.iterdir():
+        im = Image.open(child)
+        I = np.array(im)
+        I = I[:,:,0]
+        I = (I==127)+2*(I==255)
+        im = Image.fromarray(np.uint8(I))
+        im.save(child)
+
+if __name__ == '__main__':
+    PATH = Path(sys.argv[1])
+
+    reformat_images(PATH)
