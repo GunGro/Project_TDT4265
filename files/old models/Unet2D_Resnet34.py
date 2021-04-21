@@ -6,7 +6,7 @@ class Unet2D(nn.Module):
     def __init__(self, in_channels, out_channels):
         super().__init__()
 
-        self.resnet = models.resnet152(pretrained=True)
+        self.resnet = models.resnet34(pretrained=True)
         n_image_channels = in_channels
         self.resnet.conv1 = nn.Conv2d(n_image_channels,
                                 self.resnet.conv1.out_channels,
@@ -15,7 +15,7 @@ class Unet2D(nn.Module):
                                 padding=3,
                                 bias=False)
 
-        self.conv1 = self.contract_block(1024, 512, 7, 3, 0.1)
+        self.conv1 = self.contract_block(256, 512, 7, 3, 0.1)
         self.conv2 = self.contract_block(512, 1028, 3, 1, 0.2)
         self.conv3 = self.contract_block(1028, 512, 3, 1, 0.3)
 
@@ -25,9 +25,9 @@ class Unet2D(nn.Module):
         self.upconv2 = self.expand_block(128+1028, 64, 3, 1)
         self.upconv1 = self.expand_block(64+512, 64, 3, 1)
 
-        self.upconvRes1 = self.expand_block(1024+64, 128, 3, 1)
-        self.upconvRes2 = self.expand_block(512+128, 128, 3, 1)
-        self.upconvRes3 = self.expand_block(256+128, 64, 3, 1)
+        self.upconvRes1 = self.expand_block(256+64, 128, 3, 1)
+        self.upconvRes2 = self.expand_block(128+128, 128, 3, 1)
+        self.upconvRes3 = self.expand_block(64+128, 64, 3, 1)
         self.upconvRes4 = self.expand_block(64+64, out_channels, 3, 1)
 
 
@@ -36,6 +36,7 @@ class Unet2D(nn.Module):
         # pretrained feature detector
         for i, child in enumerate(self.resnet.children()):
             x = child.forward(x)
+
             if (i==1):
                 out1 = x
             if (i==3):
@@ -63,7 +64,7 @@ class Unet2D(nn.Module):
         upconvRes3 = self.upconvRes3(torch.cat([upconvRes2, out4], 1))
         upconvRes4 = self.upconvRes4(torch.cat([upconvRes3, out1], 1))
 
-        print('Made it through a forward')
+        #print('Made it through a forward')
         return upconvRes4
 
     def contract_block(self, in_channels, out_channels, kernel_size, padding, dp_prob = 0.1):

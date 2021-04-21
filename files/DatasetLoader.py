@@ -14,7 +14,22 @@ class AddGaussianNoise():
     def __call__(self, tensor):
         return tensor + torch.randn(tensor.size()) * self.std
 
+def mixup_data(x, y, alpha=1.0, use_cuda=True):
+    '''Returns mixed inputs, pairs of targets, and lambda'''
+    if alpha > 0:
+        lam = np.random.beta(alpha, alpha)
+    else:
+        lam = 1
 
+    batch_size = x.size()[0]
+    if use_cuda:
+        index = torch.randperm(batch_size).cuda()
+    else:
+        index = torch.randperm(batch_size)
+
+    mixed_x = lam * x + (1 - lam) * x[index, :]
+    y_a, y_b = y, y[index]
+    return mixed_x, y_a, y_b, lam
 
 
 #load data from a folder
@@ -32,7 +47,8 @@ class DatasetLoader(Dataset):
         self.Blur = tf.GaussianBlur(5,sigma=(0.1,2.0))
         self.Rot = tf.RandomRotation((-180,180))
         self.Noise = AddGaussianNoise(std=0.05)
-
+        self.Affine = tf.RandomAffine(30)
+        self.Normalize = tf.Normalize((0.5, ), (0.5, ))
 
     def combine_files(self, gray_file: Path, gt_dir):
         
@@ -72,7 +88,8 @@ class DatasetLoader(Dataset):
         y = F.interpolate(y[None, None], size = [size, size])[0,0].long()
 
         if self.do_augment:
-            choice = np.random.choice(6)
+            choice = np.random.choice(7)
+            x = self.Normalize(x)
             if choice == 0:
                 pass #donothing
             elif choice == 1:
@@ -89,6 +106,10 @@ class DatasetLoader(Dataset):
                 x = both[:-1]
             elif choice == 5:
                 x = self.Noise(x)
+            elif choice == 6:
+                both = self.Affine(torch.cat((x, y[None])))
+                y = both[-1].long()
+                x = both[:-1]
         return x, y
     
     def get_as_pil(self, idx):

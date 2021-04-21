@@ -38,14 +38,19 @@ class Unet2D(nn.Module):
             x = child.forward(x)
             if (i==1):
                 out1 = x
+                print(x.shape)
             if (i==3):
                 out3 = x
+                print(x.shape)
             if (i==4):
                 out4 = x
+                print(x.shape)
             if (i==5):
                 out5 = x
+                print(x.shape)
             if (i==6):
                 out6 = x
+                print(x.shape)
             if (i==6):
                 break
         # downsampling part
@@ -63,7 +68,7 @@ class Unet2D(nn.Module):
         upconvRes3 = self.upconvRes3(torch.cat([upconvRes2, out4], 1))
         upconvRes4 = self.upconvRes4(torch.cat([upconvRes3, out1], 1))
 
-        print('Made it through a forward')
+        #print('Made it through a forward')
         return upconvRes4
 
     def contract_block(self, in_channels, out_channels, kernel_size, padding, dp_prob = 0.1):
