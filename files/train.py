@@ -83,20 +83,20 @@ def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs=1):
             if phase == 'valid' and len(valid_loss) > 0 and epoch_loss.item() < min(valid_loss) and epoch > 10:
                 save_model(model, Path('../files/ModelCache/LeadingModel.pt'))
                 checkpoint = epoch
-            if epoch == 0:
-                save_model(model, Path('../files/ModelCache/LeadingModel.pt'))
-                checkpoint = epoch
 
-            if phase == 'valid' and (epoch - checkpoint) > 20:
-                print('\n \n \n')
-                print('Stopping early')
-                time_elapsed = time.time() - start
-                print('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
-                print('\n \n \n')
-                train_loss.append(epoch_loss.item()) if phase == 'train' else valid_loss.append(epoch_loss.item())
-                return train_loss, valid_loss
+
 
             train_loss.append(epoch_loss.item()) if phase=='train' else valid_loss.append(epoch_loss.item())
+
+            # do early stop?
+            if phase == 'valid' and (epoch - checkpoint) == 20:
+                print('Stopping early')
+
+                time_elapsed = time.time() - start
+                print('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
+
+                train_loss.append(epoch_loss.item()) if phase == 'train' else valid_loss.append(epoch_loss.item())
+                return train_loss, valid_loss
 
 
 
@@ -147,10 +147,10 @@ def main ():
     stupid_visual_debug = False
 
     #batch size
-    bs = 2
+    bs = 12
 
     #epochs
-    epochs_val = 1
+    epochs_val = 1000
     
     # set gca to "AKtgg"
     mp.use("TkAgg")
