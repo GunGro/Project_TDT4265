@@ -16,8 +16,9 @@ from Unet2D import Unet2D
 from utils import load_model, save_model
 
 
-def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs=1):
+def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs=1, do_mixup = False):
     start = time.time()
+
 
     if torch.cuda.is_available():
         model.cuda()
@@ -46,16 +47,31 @@ def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs=1):
 
             # iterate over data
             for x, y in dataloader:
-                if torch.cuda.is_available():
-                    x = x.cuda()
-                    y = y.cuda()
+                if do_mixup and y.shape[0] > 1 and phase == 'train':
+                    P = np.random.choice(y.shape[0],size=y.shape[0],replace = False)
+                    t = np.random.beta(0.3,0.3,1); t = max(t,1-t).item()
+                    x_shuffle = x[P]
+                    y_shuffle = y[P]
+                    x = t*x + (1-t)*x_shuffle
+                    if torch.cuda.is_available():
+                        x = x.cuda()
+                        y_shuffle = y_shuffle.cuda()
+                        y = y.cuda()
+                else:
+                    if torch.cuda.is_available():
+                        x = x.cuda()
+                        y = y.cuda()
+
                 step += 1
                 # forward pass
                 if phase == 'train':
                     # zero the gradients
                     optimizer.zero_grad()
                     outputs = model(x)
-                    loss = loss_fn(outputs, y)
+                    if do_mixup:
+                        loss = t*loss_fn(outputs, y) + (1-t)*loss_fn(outputs, y_shuffle)
+                    else:
+                        loss = loss_fn(outputs, y)
 
                     # the backward pass frees the graph memory, so there is no 
                     # need for torch.no_grad in this training pass
@@ -204,7 +220,7 @@ def main ():
 
     #do some training
     data.do_augment = True
-    train_loss, valid_loss = train(unet, train_data, valid_data, loss_fn, opt, acc_metric, epochs=epochs_val)
+    train_loss, valid_loss = train(unet, train_data, valid_data, loss_fn, opt, acc_metric, epochs=epochs_val, do_mixup=True)
     data.do_augment = False
 
     #plot training and validation losses
