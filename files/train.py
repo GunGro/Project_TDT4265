@@ -13,6 +13,7 @@ from torch import nn
 
 from DatasetLoader import DatasetLoader
 from Unet2D import Unet2D
+from utils import load_model, save_model
 
 
 def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs=1):
@@ -24,6 +25,7 @@ def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs=1):
     train_loss, valid_loss = [], []
 
     best_acc = 0.0
+    checkpoint = 0
 
     for epoch in range(epochs):
         print('Epoch {}/{}'.format(epoch, epochs - 1))
@@ -77,12 +79,32 @@ def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs=1):
         
             print('Epoch: {:.0f} {} Loss: {:.4f} Acc: {}'.format(epoch, phase, epoch_loss, epoch_acc) + " "*20)
 
+
+            if phase == 'valid' and len(valid_loss) > 0 and epoch_loss.item() < min(valid_loss) and epoch > 10:
+                save_model(model, f'../ModelCahce/LeadingModel.pt')
+                checkpoint = epoch
+            if phase == 'valid' and epoch == 0:
+                save_model(model, f'../ModelCahce/LeadingModel.pt')
+                checkpoint = epoch
+
+            if phase == 'valid' and (epoch - checkpoint) > 20:
+                print('\n \n \n')
+                print('Stopping early')
+                time_elapsed = time.time() - start
+                print('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
+                print('\n \n \n')
+                train_loss.append(epoch_loss.item()) if phase == 'train' else valid_loss.append(epoch_loss.item())
+                return train_loss, valid_loss
+
             train_loss.append(epoch_loss.item()) if phase=='train' else valid_loss.append(epoch_loss.item())
+
+
+
         if epoch < epochs -1:
             print("\033[F"*5, end = "")
 
     time_elapsed = time.time() - start
-    print('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))    
+    print('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
     
     return train_loss, valid_loss    
 
@@ -125,10 +147,10 @@ def main ():
     stupid_visual_debug = False
 
     #batch size
-    bs = 8
+    bs = 1
 
     #epochs
-    epochs_val = 100
+    epochs_val = 1
     
     # set gca to "AKtgg"
     mp.use("TkAgg")
@@ -204,13 +226,17 @@ def main ():
     running_loss = 0.0
     running_acc  = [0]*3
 
+
+    test_model = load_model(f'../ModelCahce/LeadingModel.pt')
+
+
     with torch.no_grad():
         for x, y in iter(test_data):
             if torch.cuda.is_available():
                 x = x.cuda()
                 y = y.cuda()
             unet.train(False)
-            outputs = unet(x)
+            outputs = test_model(x)
             running_loss += loss_fn(outputs, y).item()*y.shape[0]
             DSC = calculate_dice(outputs, y)
             for i in range(len(running_acc)):
@@ -228,9 +254,9 @@ def main ():
     xb, yb = next(iter(train_data))
     with torch.no_grad():
         if torch.cuda.is_available():
-            predb = unet(xb.cuda())
+            predb = test_model(xb.cuda())
         else:
-            predb = unet(xb)
+            predb = test_model(xb)
     
     if visual_debug:
         fig, ax = plt.subplots(bs,3, figsize=(15,bs*5))

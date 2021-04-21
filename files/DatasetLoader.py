@@ -87,6 +87,8 @@ class DatasetLoader(Dataset):
         x = F.interpolate(x[None], size = [size, size])[0]
         y = F.interpolate(y[None, None], size = [size, size])[0,0].long()
 
+
+
         if self.do_augment:
             choice = np.random.choice(7)
             x = self.Normalize(x)

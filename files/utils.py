@@ -4,7 +4,7 @@ import torch
 
 
 def save_model(model, PATH):
-    torch.save(model,path)
+    torch.save(model,PATH)
 
 def load_model(PATH):
     model = torch.load(PATH)
