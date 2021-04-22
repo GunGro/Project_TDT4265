@@ -105,7 +105,7 @@ def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs=1, do_mi
             train_loss.append(epoch_loss.item()) if phase=='train' else valid_loss.append(epoch_loss.item())
 
             # do early stop?
-            if phase == 'valid' and (epoch - checkpoint) == 50:
+            if phase == 'valid' and (epoch - checkpoint) == 25:
                 print('Stopping early')
 
                 time_elapsed = time.time() - start
@@ -166,7 +166,7 @@ def main (do_augment, do_mixup):
     bs = 12
 
     #epochs
-    epochs_val = 100
+    epochs_val = 300
     
     # set gca to "AKtgg"
     mp.use("TkAgg")
@@ -279,4 +279,4 @@ def main (do_augment, do_mixup):
         plt.show()
 
 if __name__ == "__main__":
-    main(do_augment = False, do_mixup = False)
+    main(do_augment = True, do_mixup = False)

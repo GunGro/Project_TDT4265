@@ -91,7 +91,6 @@ class DatasetLoader(Dataset):
 
         if self.do_augment:
             choice = np.random.choice(7)
-            x = self.Normalize(x)
             if choice == 0:
                 pass #donothing
             elif choice == 1:
