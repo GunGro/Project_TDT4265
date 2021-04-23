@@ -70,17 +70,17 @@ class Unet2D(nn.Module):
         contract = nn.Sequential(
             torch.nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, stride=1, padding=padding),
             torch.nn.BatchNorm2d(out_channels),
-            torch.nn.ReLU(),
+            torch.nn.SELU(),
 
-            torch.nn.Dropout(dp_prob),
+            torch.nn.AlphaDropout(dp_prob),
 
             torch.nn.Conv2d(out_channels, out_channels, kernel_size=kernel_size, stride=1, padding=padding),
             torch.nn.BatchNorm2d(out_channels),
-            torch.nn.ReLU(),
+            torch.nn.SELU(),
 
 
             torch.nn.MaxPool2d(kernel_size=3, stride=2, padding=1),
-            torch.nn.Dropout(dp_prob)
+            torch.nn.AlphaDropout(dp_prob)
                                  )
 
 
@@ -90,11 +90,11 @@ class Unet2D(nn.Module):
 
         expand = nn.Sequential(torch.nn.Conv2d(in_channels, out_channels, kernel_size, stride=1, padding=padding),
                             torch.nn.BatchNorm2d(out_channels),
-                            torch.nn.ReLU(),
+                            torch.nn.SELU(),
 
                             torch.nn.Conv2d(out_channels, out_channels, kernel_size, stride=1, padding=padding),
                             torch.nn.BatchNorm2d(out_channels),
-                            torch.nn.ReLU(),
+                            torch.nn.SELU(),
 
                             torch.nn.ConvTranspose2d(out_channels, out_channels, kernel_size=3, stride=2, padding=1, output_padding=1) 
                             )

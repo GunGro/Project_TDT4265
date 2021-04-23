@@ -63,7 +63,6 @@ def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs=1, do_mi
                         y = y.cuda()
 
                 step += 1
-                print('Step', step)
                 # forward pass
                 if phase == 'train':
                     # zero the gradients
@@ -167,7 +166,7 @@ def main (do_augment, do_mixup):
     bs = 5
 
     #epochs
-    epochs_val = 400
+    epochs_val = 44000
     
     # set gca to "AKtgg"
     mp.use("TkAgg")
@@ -212,7 +211,7 @@ def main (do_augment, do_mixup):
     # opt = torch.optim.Adam(unet.parameters(), lr=learn_rate)
     # opt = torch.optim.Adam(unet.parameters(), lr=0.0001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0.1, amsgrad=False)
     #consider trying with sgd also:
-    opt = torch.optim.SGD(unet.parameters(), lr=learn_rate, momentum = 0.1)
+    opt = torch.optim.SGD(unet.parameters(), lr=learn_rate, momentum = 0.9)
 
 
     #do some training
@@ -280,4 +279,4 @@ def main (do_augment, do_mixup):
         plt.show()
 
 if __name__ == "__main__":
-    main(do_augment = True, do_mixup = False)
+    main(do_augment = True, do_mixup = True)

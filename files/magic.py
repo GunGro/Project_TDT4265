@@ -38,6 +38,7 @@ def load_itk(filename, interpolator = sitk.sitkLinear):
     # Read the spacing along each dimension
     spacing = np.array(list(reversed(itkimage.GetSpacing())))
 
+    print(spacing)
     return ct_scan, origin, spacing
 
 if __name__ == "__main__":
