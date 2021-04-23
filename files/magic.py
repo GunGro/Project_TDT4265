@@ -28,6 +28,7 @@ def load_itk(filename, interpolator = sitk.sitkLinear):
     # Reads the image using SimpleITK
     itkimage = sitk.ReadImage(filename)
     isotropic_image = make_isotropic(itkimage, interpolator)
+    itk_image = isotropic_image
     # Convert the image to a  numpy array first and then shuffle the dimensions to get axis in the order z,y,x
     ct_scan = sitk.GetArrayFromImage(itkimage)
 
@@ -46,14 +47,14 @@ if __name__ == "__main__":
         # do ground_truth first
         for string in ["_2CH_ED_gt.mhd", "_4CH_ES_gt.mhd","_2CH_ES_gt.mhd", "_4CH_ED_gt.mhd"]:
             full_path = path + "/" + path + string
-            arr, _, _ = load_itk(full_path, interpolator = sitk.sitkLinear)
+            arr, _, _ = load_itk(full_path, interpolator = sitk.sitkNearestNeighbor)
 
 
             im = PIL.Image.fromarray(arr[0])
             im.save(Path_vec[-2] + "gt_" + path +string[:-7]+ ".tif")
         for string in ["_2CH_ED.mhd", "_4CH_ES.mhd","_2CH_ES.mhd", "_4CH_ED.mhd"]:
             full_path = path + "/" + path + string
-            arr, _, _ = load_itk(full_path, interpolator = sitk.sitkNearestNeighbor)
+            arr, _, _ = load_itk(full_path, interpolator = sitk.sitkLinear)
 
             im = PIL.Image.fromarray(arr[0])
             im.save(Path_vec[-1] + "gray_" + path +string[:-4]+ ".tif")
