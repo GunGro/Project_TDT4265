@@ -166,7 +166,7 @@ def main (do_augment, do_mixup):
     bs = 12
 
     #epochs
-    epochs_val = 300
+    epochs_val = 400
     
     # set gca to "AKtgg"
     mp.use("TkAgg")
@@ -208,10 +208,10 @@ def main (do_augment, do_mixup):
 
     #loss function and optimizer
     loss_fn = nn.CrossEntropyLoss()
-    opt = torch.optim.Adam(unet.parameters(), lr=learn_rate)
+    # opt = torch.optim.Adam(unet.parameters(), lr=learn_rate)
     #opt = torch.optim.Adam(unet.parameters(), lr=0.0001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0.1, amsgrad=False)
     #consider trying with sgd also:
-    #opt = torch.optim.SGD(unet.parameters(), lr=0.001, momentum = 0.1, dampening = 0, weight_decay = 0.1, nesterov = False)
+    opt = torch.optim.SGD(unet.parameters(), lr=learn_rate, momentum = 0.1)
 
 
     #do some training
