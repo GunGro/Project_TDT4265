@@ -4,6 +4,26 @@ import numpy as np
 import matplotlib as mp
 import matplotlib.pyplot as plt
 import PIL
+
+def make_isotropic(image, interpolator = sitk.sitkLinear):
+    '''
+    Resample an image to isotropic pixels (using smallest spacing from original) and save to file. Many file formats
+    (jpg, png,...) expect the pixels to be isotropic. By default the function uses a linear interpolator. For
+    label images one should use the sitkNearestNeighbor interpolator so as not to introduce non-existant labels.
+    '''
+    original_spacing = image.GetSpacing()
+    # Image is already isotropic, just return a copy.
+    if all(spc == original_spacing[0] for spc in original_spacing):
+        return sitk.Image(image)
+    # Make image isotropic via resampling.
+    original_size = image.GetSize()
+    min_spacing = min(original_spacing)
+    new_spacing = [min_spacing]*image.GetDimension()
+    new_size = [int(round(osz*ospc/min_spacing)) for osz,ospc in zip(original_size, original_spacing)]
+    return sitk.Resample(image, new_size, sitk.Transform(), interpolator,
+                         image.GetOrigin(), new_spacing, image.GetDirection(), 0,
+                         image.GetPixelID())
+
 def load_itk(filename):
     # Reads the image using SimpleITK
     itkimage = sitk.ReadImage(filename)

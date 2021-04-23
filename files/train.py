@@ -63,6 +63,7 @@ def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs=1, do_mi
                         y = y.cuda()
 
                 step += 1
+                print('Step', step)
                 # forward pass
                 if phase == 'train':
                     # zero the gradients
@@ -163,7 +164,7 @@ def main (do_augment, do_mixup):
     stupid_visual_debug = False
 
     #batch size
-    bs = 12
+    bs = 5
 
     #epochs
     epochs_val = 300
@@ -208,15 +209,15 @@ def main (do_augment, do_mixup):
 
     #loss function and optimizer
     loss_fn = nn.CrossEntropyLoss()
-    opt = torch.optim.Adam(unet.parameters(), lr=learn_rate)
-    #opt = torch.optim.Adam(unet.parameters(), lr=0.0001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0.1, amsgrad=False)
+    #opt = torch.optim.Adam(unet.parameters(), lr=learn_rate)
+    opt = torch.optim.Adam(unet.parameters(), lr=0.0001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0.1, amsgrad=False)
     #consider trying with sgd also:
     #opt = torch.optim.SGD(unet.parameters(), lr=0.001, momentum = 0.1, dampening = 0, weight_decay = 0.1, nesterov = False)
 
 
     #do some training
-    data.do_augment = do_augment
-    train_loss, valid_loss = train(unet, train_data, valid_data, loss_fn, opt, acc_metric, epochs=epochs_val, do_mixup=do_mixup)
+    data.do_augment = False
+    train_loss, valid_loss = train(unet, train_data, valid_data, loss_fn, opt, acc_metric, epochs=epochs_val, do_mixup=True)
     data.do_augment = False
 
     #plot training and validation losses
