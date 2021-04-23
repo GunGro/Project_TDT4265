@@ -43,13 +43,13 @@ class DatasetLoader(Dataset):
         self.pytorch = pytorch
         self.do_augment = False
 
-        self.Vflip = tf.RandomVerticalFlip(p=1)
-        self.Hflip = tf.RandomHorizontalFlip(p=1)
+        self.trsf = tf.Compose([
+                tf.RandomAffine(degrees = (-180,180), translate = (0.2, 0.2), scale = (0.5, 1.2)),
+                tf.RandomVerticalFlip()
+                ])
+
         self.Blur = tf.GaussianBlur(5,sigma=(0.1,2.0))
-        self.Rot = tf.RandomRotation((-180,180))
         self.Noise = AddGaussianNoise(std=0.05)
-        self.Affine = tf.RandomAffine(30)
-        self.Normalize = tf.Normalize((0.5, ), (0.5, ))
 
     def combine_files(self, gray_file: Path, gt_dir):
         
@@ -90,27 +90,18 @@ class DatasetLoader(Dataset):
 
 
         if self.do_augment:
-            choice = np.random.choice(7)
+            # do the random movement/scaling of image
+            both = self.trsf(torch.cat((x,y[None])))
+            x = both[:-1]; y = both[-1].long()
+
+            # either add any noice/blur to x or do nothing
+            choice = np.random.choice(3)
             if choice == 0:
                 pass #donothing
             elif choice == 1:
-                x = self.Hflip(x)
-                y = self.Hflip(y)
-            elif choice == 2:
-                x = self.Vflip(x)
-                y = self.Vflip(y)
+                x = self.Noise(x)
             elif choice == 3:
                 x = self.Blur(x)
-            elif choice == 4:
-                both = self.Rot(torch.cat((x,y[None])))
-                y = both[-1].long()
-                x = both[:-1]
-            elif choice == 5:
-                x = self.Noise(x)
-            elif choice == 6:
-                both = self.Affine(torch.cat((x, y[None])))
-                y = both[-1].long()
-                x = both[:-1]
         return x, y
     
     def get_as_pil(self, idx):
