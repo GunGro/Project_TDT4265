@@ -170,7 +170,7 @@ def main (do_augment):
     bs = 12
 
     #epochs
-    epochs_val = 0
+    epochs_val = 10000
     
     # set gca to "AKtgg"
     mp.use("TkAgg")
@@ -184,7 +184,7 @@ def main (do_augment):
                         base_path/'train_gt')
 
 
-    num_train = int(0.6 * len(data))
+    num_train = int(0.85 * len(data))
     num_val   = len(data) - num_train
 
 
