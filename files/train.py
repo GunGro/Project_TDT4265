@@ -166,7 +166,7 @@ def main (do_augment, do_mixup, do_blur):
     stupid_visual_debug = False
 
     #batch size
-    bs = 5
+    bs = 1
 
     #epochs
     epochs_val = 0
@@ -256,10 +256,10 @@ def main (do_augment, do_mixup, do_blur):
                 y = y.cuda()
             test_model.train(False)
             outputs = test_model(x)
-            running_loss += loss_fn(outputs, y).item()*y.shape[0]
 
-            #Resampling to 384x384 resolution
-            outputs = F.interpolate(x, size=[y.shape[2], y.shape[3]], mode='nearest')
+
+            outputs = F.interpolate(outputs, size=[y.shape[-2], y.shape[-1]], mode='nearest')
+            running_loss += loss_fn(outputs, y).item() * y.shape[0]
 
             DSC = calculate_dice(outputs, y)
             for i in range(len(running_acc)):
@@ -273,6 +273,10 @@ def main (do_augment, do_mixup, do_blur):
         print(f"Dice score of class {i}: {dice_score : .4f}")
         
     #show the predicted segmentations
+    data.do_resample = True
+    bs = 2
+    test_data = DataLoader(data,batch_size=bs)
+
 
     xb, yb = next(iter(test_data))
     with torch.no_grad():

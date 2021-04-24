@@ -92,6 +92,8 @@ class DatasetLoader(Dataset):
 
         if self.do_resample:
             y = F.interpolate(y[None, None], size = [size, size])[0,0].long()
+        else:
+            y = y.long()
 
 
         if self.do_augment:
