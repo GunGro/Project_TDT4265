@@ -55,6 +55,9 @@ class DatasetLoader(Dataset):
         self.Blur = tf.GaussianBlur(5,sigma=(0.1,2.0))
         self.Noise = AddGaussianNoise(std=0.05)
 
+        self.TEE = False
+        self.TEErotate = tf.RandomRotation((90,90))
+
     def combine_files(self, gray_file: Path, gt_dir):
         
         files = {'gray': gray_file, 
@@ -96,7 +99,6 @@ class DatasetLoader(Dataset):
         else:
             y = y.long()
 
-
         if self.do_augment:
             # do the random movement/scaling of image
             both = self.trsf(torch.cat((x,y[None])))
@@ -111,6 +113,10 @@ class DatasetLoader(Dataset):
                 x = self.Noise(x)
             elif choice == 3:
                 x = self.Blur(x)
+
+        if self.TEE:
+            both = self.TEErotate(torch.cat((x, y[None])))
+            x = both[:-1]; y = both[-1].long()
         return x, y
     
     def get_as_pil(self, idx):

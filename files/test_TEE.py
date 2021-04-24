@@ -13,7 +13,7 @@ def load_TEE(bs):
     base_path = Path("../datasets/TEE_GT/")
     data = DatasetLoader(base_path/'train_gray',
                         base_path/'train_gt')
-
+    data.TEE = True
     test_data = DataLoader(data,batch_size=bs)
 
     return test_data
@@ -27,6 +27,7 @@ if __name__ == '__main__':
     model = load_model(Path('../files/ModelCache/LeadingModel.pt'))
 
     test_data = load_TEE(bs)
+
 
     running_loss = 0
     running_acc = [0]*3
