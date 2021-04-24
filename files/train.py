@@ -50,7 +50,6 @@ def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs=1, do_mi
             # iterate over data
             for x, y in dataloader:
 
-                print(x.shape)
                 if do_mixup and y.shape[0] > 1 and phase == 'train':
                     P = np.random.choice(y.shape[0],size=y.shape[0],replace = False)
                     t = np.random.beta(0.3,0.3,1); t = max(t,1-t).item()
