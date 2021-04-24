@@ -1,3 +1,4 @@
+#! /bin/env python
 import torch
 from DatasetLoader import DatasetLoader
 from pathlib import Path
@@ -21,11 +22,12 @@ def load_TEE(bs):
 if __name__ == '__main__':
     visual_debug = True
 
+    bs = 8
+
     model = load_model(Path('../files/ModelCache/LeadingModel.pt'))
 
-    test_data = load_TEE(bs=2)
+    test_data = load_TEE(bs)
 
-    bs = 2
     running_loss = 0
     running_acc = [0]*3
     loss_fn = torch.nn.CrossEntropyLoss()

@@ -25,3 +25,4 @@ if __name__ == '__main__':
     PATH = Path(sys.argv[1])
 
     reformat_images(PATH)
+    # convert_tif_to_jpg(PATH)

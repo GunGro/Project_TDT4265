@@ -28,7 +28,7 @@ def load_itk(filename, interpolator = sitk.sitkLinear):
     # Reads the image using SimpleITK
     itkimage = sitk.ReadImage(filename)
     isotropic_image = make_isotropic(itkimage, interpolator)
-    itk_image = isotropic_image
+    itkimage = isotropic_image
     # Convert the image to a  numpy array first and then shuffle the dimensions to get axis in the order z,y,x
     ct_scan = sitk.GetArrayFromImage(itkimage)
 

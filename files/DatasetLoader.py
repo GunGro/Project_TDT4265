@@ -42,6 +42,7 @@ class DatasetLoader(Dataset):
         self.files = [self.combine_files(f, gt_dir) for f in gray_dir.iterdir() if not f.is_dir()]
         self.pytorch = pytorch
         self.do_augment = False
+        self.do_blur    = False
 
         self.trsf = tf.Compose([
                 tf.RandomAffine(degrees = (-180,180), translate = (0.2, 0.2), scale = (0.5, 1.2)),
@@ -94,6 +95,7 @@ class DatasetLoader(Dataset):
             both = self.trsf(torch.cat((x,y[None])))
             x = both[:-1]; y = both[-1].long()
 
+        if self.do_blur:
             # either add any noice/blur to x or do nothing
             choice = np.random.choice(3)
             if choice == 0:

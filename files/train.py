@@ -157,16 +157,16 @@ def multiclass_dice(y, y_pred, num_classes):
     return dice/num_classes
 
 
-def main (do_augment, do_mixup):
+def main (do_augment, do_mixup, do_blur):
     #enable if you want to see some plotting
     visual_debug = True
     stupid_visual_debug = False
 
     #batch size
-    bs = 5
+    bs = 12
 
     #epochs
-    epochs_val = 44000
+    epochs_val = 4000
     
     # set gca to "AKtgg"
     mp.use("TkAgg")
@@ -193,6 +193,7 @@ def main (do_augment, do_mixup):
     if stupid_visual_debug:
         xb, yb = next(iter(train_data))
         data.do_augment = do_augment
+        data.do_blur = do_blur
         for x,y in zip (xb, yb):
             fig, ax = plt.subplots(1,2)
             xb, yb = next(iter(train_data))
@@ -200,6 +201,7 @@ def main (do_augment, do_mixup):
             ax[1].imshow(yb[0].numpy())
             plt.show()
         data.do_augment = False
+        data.do_blur = False
 
     xb, yb = next(iter(train_data))
 
@@ -215,8 +217,10 @@ def main (do_augment, do_mixup):
 
 
     #do some training
-    data.do_augment = False
-    train_loss, valid_loss = train(unet, train_data, valid_data, loss_fn, opt, acc_metric, epochs=epochs_val, do_mixup=True)
+    data.do_blur = do_blur
+    data.do_augment = do_augment
+    train_loss, valid_loss = train(unet, train_data, valid_data, loss_fn, opt, acc_metric, epochs=epochs_val, do_mixup=do_mixup)
+    data.do_blur = False
     data.do_augment = False
 
     #plot training and validation losses
@@ -279,4 +283,4 @@ def main (do_augment, do_mixup):
         plt.show()
 
 if __name__ == "__main__":
-    main(do_augment = True, do_mixup = True)
+    main(do_augment = True, do_mixup = False, do_blur = False)
