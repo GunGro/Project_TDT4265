@@ -9,6 +9,8 @@ from pathlib import Path
 import torch
 from torch.utils.data import Dataset, DataLoader, sampler
 from torch import nn
+import torch.nn.functional as F
+
 
 
 from DatasetLoader import DatasetLoader
@@ -47,6 +49,7 @@ def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs=1, do_mi
 
             # iterate over data
             for x, y in dataloader:
+                print(x.shape)
                 if do_mixup and y.shape[0] > 1 and phase == 'train':
                     P = np.random.choice(y.shape[0],size=y.shape[0],replace = False)
                     t = np.random.beta(0.3,0.3,1); t = max(t,1-t).item()
@@ -163,16 +166,16 @@ def main (do_augment, do_mixup, do_blur):
     stupid_visual_debug = False
 
     #batch size
-    bs = 12
+    bs = 5
 
     #epochs
-    epochs_val = 4000
+    epochs_val = 0
     
     # set gca to "AKtgg"
     mp.use("TkAgg")
     
     #learning rate
-    learn_rate = 0.01
+    learn_rate = 0.001
 
     #load the training data
     base_path = Path("../datasets/CAMUS_full/Train/")
@@ -246,6 +249,7 @@ def main (do_augment, do_mixup, do_blur):
 
 
     with torch.no_grad():
+        data.do_resample = False
         for x, y in iter(test_data):
             if torch.cuda.is_available():
                 x = x.cuda()
@@ -253,6 +257,10 @@ def main (do_augment, do_mixup, do_blur):
             test_model.train(False)
             outputs = test_model(x)
             running_loss += loss_fn(outputs, y).item()*y.shape[0]
+
+            #Resampling to 384x384 resolution
+            outputs = F.interpolate(x, size=[y.shape[2], y.shape[3]], mode='nearest')
+
             DSC = calculate_dice(outputs, y)
             for i in range(len(running_acc)):
                 running_acc[i]  += DSC[i]*y.shape[0]

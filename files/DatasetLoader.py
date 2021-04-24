@@ -43,6 +43,8 @@ class DatasetLoader(Dataset):
         self.pytorch = pytorch
         self.do_augment = False
         self.do_blur    = False
+        self.do_resample = True
+
 
         self.trsf = tf.Compose([
                 tf.RandomAffine(degrees = (-180,180), translate = (0.2, 0.2), scale = (0.5, 1.2)),
@@ -87,7 +89,9 @@ class DatasetLoader(Dataset):
         x = torch.tensor(self.open_as_array(idx, invert=self.pytorch), dtype=torch.float32)
         y = torch.tensor(self.open_mask(idx, add_dims=False), dtype=torch.float32)
         x = F.interpolate(x[None], size = [size, size])[0]
-        y = F.interpolate(y[None, None], size = [size, size])[0,0].long()
+
+        if self.do_resample:
+            y = F.interpolate(y[None, None], size = [size, size])[0,0].long()
 
 
         if self.do_augment:
