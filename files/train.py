@@ -10,7 +10,7 @@ import torch
 from torch.utils.data import Dataset, DataLoader, sampler
 from torch import nn
 import torch.nn.functional as F
-
+import sys
 
 
 from DatasetLoader import DatasetLoader
@@ -49,6 +49,7 @@ def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs=1, do_mi
 
             # iterate over data
             for x, y in dataloader:
+
                 print(x.shape)
                 if do_mixup and y.shape[0] > 1 and phase == 'train':
                     P = np.random.choice(y.shape[0],size=y.shape[0],replace = False)
@@ -100,7 +101,7 @@ def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs=1, do_mi
 
 
             if phase == 'valid' and len(valid_loss) > 0 and epoch_loss.item() < min(valid_loss) and epoch > 10:
-                save_model(model, Path('../files/ModelCache/LeadingModel.pt'))
+                save_model(model, Path('../files/ModelCache/'+sys.argv[4]))
                 checkpoint = epoch
 
 
@@ -160,9 +161,9 @@ def multiclass_dice(y, y_pred, num_classes):
     return dice/num_classes
 
 
-def main (do_augment, do_mixup, do_blur):
+def main (do_augment):
     #enable if you want to see some plotting
-    visual_debug = True
+    visual_debug = False
     stupid_visual_debug = False
 
     #batch size
@@ -189,6 +190,19 @@ def main (do_augment, do_mixup, do_blur):
 
 
     #split the training dataset and initialize the data loaders
+    data.input_size = int(sys.argv[1])
+    data.do_blur = bool(sys.argv[2])
+
+    if sys.argv[2] == 'blur':
+        do_blur = True
+    else:
+        do_blur = False
+
+    if sys.argv[3] == 'mixup':
+        do_mixup = True
+    else:
+        do_mixup = False
+
     train_dataset, valid_dataset = torch.utils.data.random_split(data, (num_train, num_val))
     train_data = DataLoader(train_dataset, batch_size=bs, shuffle=True)
     valid_data = DataLoader(valid_dataset, batch_size=bs, shuffle=True)
@@ -245,7 +259,7 @@ def main (do_augment, do_mixup, do_blur):
     running_loss = 0.0
     running_acc  = [0]*3
 
-    test_model = load_model(Path('../files/ModelCache/LeadingModel.pt'))
+    test_model = load_model(Path('../files/ModelCache/'+sys.argv[4]))
 
 
     with torch.no_grad():
@@ -296,4 +310,4 @@ def main (do_augment, do_mixup, do_blur):
         plt.show()
 
 if __name__ == "__main__":
-    main(do_augment = True, do_mixup = False, do_blur = False)
+    main(do_augment = True)

@@ -44,6 +44,7 @@ class DatasetLoader(Dataset):
         self.do_augment = False
         self.do_blur    = False
         self.do_resample = True
+        self.input_size = 384
 
 
         self.trsf = tf.Compose([
@@ -84,14 +85,14 @@ class DatasetLoader(Dataset):
         
         return np.expand_dims(raw_mask, 0) if add_dims else raw_mask
     
-    def __getitem__(self, idx, size = 384):
+    def __getitem__(self, idx):
         #get the image and mask as arrays
         x = torch.tensor(self.open_as_array(idx, invert=self.pytorch), dtype=torch.float32)
         y = torch.tensor(self.open_mask(idx, add_dims=False), dtype=torch.float32)
-        x = F.interpolate(x[None], size = [size, size])[0]
+        x = F.interpolate(x[None], size = [self.input_size, self.input_size])[0]
 
         if self.do_resample:
-            y = F.interpolate(y[None, None], size = [size, size])[0,0].long()
+            y = F.interpolate(y[None, None], size = [self.input_size, self.input_size])[0,0].long()
         else:
             y = y.long()
 

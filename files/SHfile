@@ -1,0 +1,9 @@
+#! /usr/env sh
+pwd
+
+python train.py 256 noblur nomixup 256model.pt
+python train.py 512 noblur nomixup 512model.pt
+python train.py 384 blur nomixup blurmodel.pt
+python train.py 384 noblur mixup mixupmodel.pt
+
+echo we did it baby
