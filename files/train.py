@@ -167,7 +167,7 @@ def main (do_augment):
     stupid_visual_debug = False
 
     #batch size
-    bs = 1
+    bs = 12
 
     #epochs
     epochs_val = 0

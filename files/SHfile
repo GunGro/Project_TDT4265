@@ -1,6 +1,6 @@
-#! /usr/env sh
+#! /bin/zsh
 pwd
-conda activate PyTorch.gpu
+
 python train.py 256 noblur nomixup 256model.pt
 python train.py 512 noblur nomixup 512model.pt
 python train.py 384 blur nomixup blurmodel.pt
