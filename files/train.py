@@ -264,7 +264,8 @@ def main (do_augment, do_mixup, do_blur):
             DSC = calculate_dice(outputs, y)
             for i in range(len(running_acc)):
                 running_acc[i]  += DSC[i]*y.shape[0]
-                
+
+
         for i in range(len(running_acc)):
             running_acc[i] /= len(test_data.dataset)
 
