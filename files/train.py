@@ -108,7 +108,7 @@ def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs=1, do_mi
             train_loss.append(epoch_loss.item()) if phase=='train' else valid_loss.append(epoch_loss.item())
 
             # do early stop?
-            if phase == 'valid' and (epoch - checkpoint) == 25:
+            if phase == 'valid' and (epoch - checkpoint) == 15:
                 print('Stopping early')
 
                 time_elapsed = time.time() - start
@@ -162,14 +162,14 @@ def multiclass_dice(y, y_pred, num_classes):
 
 def main (do_augment):
     #enable if you want to see some plotting
-    visual_debug = False
+    visual_debug = True
     stupid_visual_debug = False
 
     #batch size
     bs = 12
 
     #epochs
-    epochs_val = 10000
+    epochs_val = 1000
     
     # set gca to "AKtgg"
     mp.use("TkAgg")
@@ -201,6 +201,8 @@ def main (do_augment):
         do_mixup = True
     else:
         do_mixup = False
+    print("mixup:", do_mixup)
+    print("blur:", do_blur)
 
     train_dataset, valid_dataset = torch.utils.data.random_split(data, (num_train, num_val))
     train_data = DataLoader(train_dataset, batch_size=bs, shuffle=True)
@@ -226,15 +228,16 @@ def main (do_augment):
 
     #loss function and optimizer
     loss_fn = nn.CrossEntropyLoss()
-    # opt = torch.optim.Adam(unet.parameters(), lr=learn_rate)
+    opt = torch.optim.Adam(unet.parameters(), lr=learn_rate)
     # opt = torch.optim.Adam(unet.parameters(), lr=0.0001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0.1, amsgrad=False)
     #consider trying with sgd also:
-    opt = torch.optim.SGD(unet.parameters(), lr=learn_rate, momentum = 0.9)
+    # opt = torch.optim.SGD(unet.parameters(), lr=learn_rate, momentum = 0.9)
 
 
     #do some training
     data.do_blur = do_blur
     data.do_augment = do_augment
+    print("augment data:", data.do_augment)
     train_loss, valid_loss = train(unet, train_data, valid_data, loss_fn, opt, acc_metric, epochs=epochs_val, do_mixup=do_mixup)
     data.do_blur = False
     data.do_augment = False
@@ -252,7 +255,7 @@ def main (do_augment):
     data = DatasetLoader(base_path/'train_gray',
                         base_path/'train_gt')
 
-    test_data = DataLoader(data,batch_size=bs)
+    test_data = DataLoader(data,batch_size=1)
 
 
     running_loss = 0.0
@@ -288,7 +291,6 @@ def main (do_augment):
         
     #show the predicted segmentations
     data.do_resample = True
-    bs = 2
     test_data = DataLoader(data,batch_size=bs)
 
 

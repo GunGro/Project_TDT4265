@@ -58,6 +58,7 @@ class DatasetLoader(Dataset):
         self.TEE = False
         self.TEErotate = tf.RandomRotation((90,90))
 
+        self.do_contrast = False
     def combine_files(self, gray_file: Path, gt_dir):
         
         files = {'gray': gray_file, 
@@ -117,6 +118,8 @@ class DatasetLoader(Dataset):
         if self.TEE:
             both = self.TEErotate(torch.cat((x, y[None])))
             x = both[:-1]; y = both[-1].long()
+        if self.do_contrast:
+            x = tf.functional.autocontrast(x)
         return x, y
     
     def get_as_pil(self, idx):

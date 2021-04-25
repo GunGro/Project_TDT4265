@@ -15,6 +15,7 @@ def load_TEE(bs):
     data = DatasetLoader(base_path/'train_gray',
                         base_path/'train_gt')
     data.TEE = True
+    data.do_contrast = False
     test_data = DataLoader(data,batch_size=bs)
 
     return test_data
