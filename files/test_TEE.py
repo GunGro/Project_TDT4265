@@ -6,6 +6,7 @@ from utils import load_model
 from torch.utils.data import DataLoader
 from train import calculate_dice, batch_to_img, predb_to_mask
 import matplotlib.pyplot as plt
+import sys
 
 
 def load_TEE(bs):
@@ -24,7 +25,7 @@ if __name__ == '__main__':
 
     bs = 8
 
-    model = load_model(Path('../files/ModelCache/LeadingModel.pt'))
+    model = load_model(Path('../files/ModelCache/' + sys.argv[1]))
 
     test_data = load_TEE(bs)
 

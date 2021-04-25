@@ -1,7 +1,6 @@
 #! /bin/zsh
 pwd
 
-python train.py 384 noblur nomixup basemodel.pt
 python train.py 256 noblur nomixup 256model.pt
 python train.py 512 noblur nomixup 512model.pt
 python train.py 384 blur nomixup blurmodel.pt
